@@ -11,73 +11,59 @@ cmd({
   filename: __filename
 }, async (conn, mek, m, { from, args, reply }) => {
   try {
-    const text = args.join(" ");
-    if (!text) return reply("❌ Please provide a song name.\n\nExample: `.play perfect ed sheeran`");
-
-    await conn.sendMessage(from, { react: { text: "🔍", key: mek.key } });
-
-    const search = await yts(text);
-    const convert = search.videos[0];
-    if (!convert) return reply("❌ No results found!");
-
-    if (convert.seconds >= 3600) {
-      return reply("⏳ Video is longer than 1 hour, cannot process.");
+    const query = args.join(" ");
+    if (!query) {
+      return reply("❗ *Usage:* `.play <song name>`\n📌 *Example:* `.play faded alan walker`");
     }
 
-    // 🔗 Try APIs
-    let audioUrl;
-    try {
-      const { data } = await axios.get(
-        `https://apis.davidcyriltech.my.id/download/ytmp3?url=${encodeURIComponent(convert.url)}`
-      );
-      audioUrl = data?.result?.download_url;
-    } catch (e) {
-      return reply("❌ Failed to fetch audio link.");
+    // Search YouTube
+    const searchResults = await yts(query);
+    const video = searchResults.videos[0];
+    if (!video) {
+      return reply("❌ *No video found for your search.*");
     }
 
-    if (!audioUrl) return reply("❌ Could not fetch audio link.");
+    const videoUrl = `https://www.youtube.com/watch?v=${video.videoId}`;
+    let downloadUrl;
+    let response;
 
-    // 📥 Download audio as buffer instead of URL
-    const audioBuffer = await axios.get(audioUrl, { responseType: "arraybuffer" });
+    // Use your logic (mp3 via noobs-api, mp4 via jawad-tech)
+    downloadUrl = `https://noobs-api.top/dipto/ytDl3?link=${encodeURIComponent(video.videoId)}&format=mp3`;
+    response = await axios.get(downloadUrl);
 
-    const caption =
-      `🎵 *Now Playing* 🎵\n\n` +
-      `• *Title:* ${convert.title}\n` +
-      `• *Duration:* ${convert.timestamp}\n` +
-      `• *Views:* ${convert.views}\n` +
-      `• *Uploaded:* ${convert.ago}\n` +
-      `• *Channel:* ${convert.author.name}\n` +
-      `• *Url:* ${convert.url}`;
+    const data = response.data;
+    if (!data.downloadLink) {
+      return reply("❌ *Error: the download link is empty or invalid.*");
+    }
+
+    // Caption
+    const caption = `
+━❍ *SONG*━
+🎵 *Title:* ${video.title}
+👤 *Artist:* ${video.author.name}
+⏱️ *Duration:* ${video.timestamp}
+📅 *Published:* ${video.ago}
+👁️ *Views:* ${video.views.toLocaleString()}
+📥 *Format:* MP3
+━❍ Preparing... ⏳━
+🤖 *𝓟𝓸𝓹𝓴𝓲𝓭*
+`.trim();
 
     // Send thumbnail + caption
     await conn.sendMessage(from, {
-      image: { url: convert.thumbnail },
-      caption,
-      contextInfo: {
-        externalAdReply: {
-          title: convert.title,
-          body: "Popkid XMD Bot • YouTube Music",
-          thumbnailUrl: convert.thumbnail,
-          sourceUrl: convert.url,
-          mediaType: 1,
-          renderLargerThumbnail: true
-        }
-      }
+      image: { url: video.thumbnail },
+      caption
     }, { quoted: mek });
 
-    // Send real audio buffer
+    // Send audio file
     await conn.sendMessage(from, {
-      audio: audioBuffer.data,
+      audio: { url: data.downloadLink },
       mimetype: "audio/mpeg",
-      ptt: false, // true = voice note
-      fileName: `${convert.title}.mp3`
+      fileName: `${video.title.replace(/[\\/:*?"<>|]/g, "")}.mp3`
     }, { quoted: mek });
-
-    await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
 
   } catch (err) {
-    console.error(err);
-    reply("❌ Error: " + err.message);
-    await conn.sendMessage(from, { react: { text: "❌", key: mek.key } });
+    console.error("[PLAY ERROR]:", err.message);
+    reply(`❌ *An error occurred:* ${err.message}`);
   }
 });
