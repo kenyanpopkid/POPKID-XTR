@@ -36,17 +36,16 @@ const fakevCard = {
     },
     message: {
         contactMessage: {
-            displayName: "© dev popkid",
+            displayName: "© PopKid XTR",
             vcard: `BEGIN:VCARD
 VERSION:3.0
-FN:Meta
-ORG:META AI;
-TEL;type=CELL;type=VOICE;waid=13135550002:+13135550002
+FN:PopKid XTR
+ORG:POPKID TECH;
+TEL;type=CELL;type=VOICE;waid=254111385747:+254111385747
 END:VCARD`
         }
     }
 };
-
 // Updated runtime function (kept for reference, but not used in the menu)
 const runtime = (seconds) => {
     seconds = Math.floor(seconds);
