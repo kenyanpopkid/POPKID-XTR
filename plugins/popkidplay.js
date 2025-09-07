@@ -16,7 +16,6 @@ cmd({
 
     await conn.sendMessage(from, { react: { text: "🔍", key: mek.key } });
 
-    // 🔎 Search YouTube
     const search = await yts(text);
     const convert = search.videos[0];
     if (!convert) return reply("❌ No results found!");
@@ -25,39 +24,22 @@ cmd({
       return reply("⏳ Video is longer than 1 hour, cannot process.");
     }
 
-    // Try multiple APIs
+    // 🔗 Try APIs
     let audioUrl;
     try {
       const { data } = await axios.get(
-        `https://api.betabotz.eu.org/api/download/yt?url=${convert.url}&apikey=${process.env.BETABOTZ_KEY || "trial"}`
+        `https://apis.davidcyriltech.my.id/download/ytmp3?url=${encodeURIComponent(convert.url)}`
       );
-      audioUrl = data?.result?.mp3 || data?.mp3;
-    } catch {}
-
-    if (!audioUrl) {
-      try {
-        const { data } = await axios.get(
-          `https://apis.davidcyriltech.my.id/download/ytmp3?url=${encodeURIComponent(convert.url)}`
-        );
-        audioUrl = data?.result?.download_url;
-      } catch {}
+      audioUrl = data?.result?.download_url;
+    } catch (e) {
+      return reply("❌ Failed to fetch audio link.");
     }
 
-    if (!audioUrl) {
-      try {
-        const { data } = await axios.get(
-          `https://iamtkm.vercel.app/downloaders/ytmp3?url=${encodeURIComponent(convert.url)}`
-        );
-        audioUrl = data?.data?.url;
-      } catch {}
-    }
+    if (!audioUrl) return reply("❌ Could not fetch audio link.");
 
-    if (!audioUrl) return reply("❌ All servers failed, please try again later.");
+    // 📥 Download audio as buffer instead of URL
+    const audioBuffer = await axios.get(audioUrl, { responseType: "arraybuffer" });
 
-    // Download audio buffer
-    const file = await axios.get(audioUrl, { responseType: "arraybuffer" });
-
-    // 🎶 Caption
     const caption =
       `🎵 *Now Playing* 🎵\n\n` +
       `• *Title:* ${convert.title}\n` +
@@ -67,7 +49,7 @@ cmd({
       `• *Channel:* ${convert.author.name}\n` +
       `• *Url:* ${convert.url}`;
 
-    // 📸 Send preview
+    // Send thumbnail + caption
     await conn.sendMessage(from, {
       image: { url: convert.thumbnail },
       caption,
@@ -83,28 +65,19 @@ cmd({
       }
     }, { quoted: mek });
 
-    // 🎧 Send audio
+    // Send real audio buffer
     await conn.sendMessage(from, {
-      audio: file.data,
+      audio: audioBuffer.data,
       mimetype: "audio/mpeg",
-      fileName: `${convert.title}.mp3`,
-      contextInfo: {
-        externalAdReply: {
-          title: convert.title,
-          body: "Powered by Popkid XMD Bot",
-          thumbnailUrl: convert.thumbnail,
-          sourceUrl: convert.url,
-          mediaType: 1,
-          renderLargerThumbnail: true
-        }
-      }
+      ptt: false, // true = voice note
+      fileName: `${convert.title}.mp3`
     }, { quoted: mek });
 
     await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
 
   } catch (err) {
     console.error(err);
-    reply("❌ Error: " + (err.message || err));
+    reply("❌ Error: " + err.message);
     await conn.sendMessage(from, { react: { text: "❌", key: mek.key } });
   }
 });
