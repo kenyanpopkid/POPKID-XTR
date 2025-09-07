@@ -4,7 +4,7 @@ const yts = require("yt-search");
 
 cmd({
   pattern: "popkidplay",
-  alias: ["ian", "mus"],
+  alias: ["son", "mus"],
   desc: "Download and play songs from YouTube",
   category: "downloader",
   react: "🎶",
@@ -12,9 +12,8 @@ cmd({
 }, async (conn, mek, m, { from, args, reply }) => {
   try {
     const text = args.join(" ");
-    if (!text) return reply("❌ Please provide a song name!\n\nExample: `.play despacito`");
+    if (!text) return reply("❌ Please provide a song name.\n\nExample: `.play perfect ed sheeran`");
 
-    // React searching
     await conn.sendMessage(from, { react: { text: "🔍", key: mek.key } });
 
     // 🔎 Search YouTube
@@ -23,26 +22,39 @@ cmd({
     if (!convert) return reply("❌ No results found!");
 
     if (convert.seconds >= 3600) {
-      return reply("⚠️ Video is longer than 1 hour, cannot process.");
+      return reply("⏳ Video is longer than 1 hour, cannot process.");
     }
 
-    // 🔗 Get download link
+    // Try multiple APIs
     let audioUrl;
     try {
       const { data } = await axios.get(
-        "https://api.betabotz.eu.org/api/download/yt?url=" +
-          convert.url +
-          "&apikey=" +
-          lann
+        `https://api.betabotz.eu.org/api/download/yt?url=${convert.url}&apikey=${process.env.BETABOTZ_KEY || "trial"}`
       );
       audioUrl = data?.result?.mp3 || data?.mp3;
-    } catch (e) {
-      return reply("❌ Failed to fetch audio link.");
+    } catch {}
+
+    if (!audioUrl) {
+      try {
+        const { data } = await axios.get(
+          `https://apis.davidcyriltech.my.id/download/ytmp3?url=${encodeURIComponent(convert.url)}`
+        );
+        audioUrl = data?.result?.download_url;
+      } catch {}
     }
 
-    if (!audioUrl) return reply("❌ Could not fetch audio link.");
+    if (!audioUrl) {
+      try {
+        const { data } = await axios.get(
+          `https://iamtkm.vercel.app/downloaders/ytmp3?url=${encodeURIComponent(convert.url)}`
+        );
+        audioUrl = data?.data?.url;
+      } catch {}
+    }
 
-    // 🎵 Download audio buffer
+    if (!audioUrl) return reply("❌ All servers failed, please try again later.");
+
+    // Download audio buffer
     const file = await axios.get(audioUrl, { responseType: "arraybuffer" });
 
     // 🎶 Caption
@@ -71,11 +83,11 @@ cmd({
       }
     }, { quoted: mek });
 
-    // 🎧 Send audio file
+    // 🎧 Send audio
     await conn.sendMessage(from, {
       audio: file.data,
       mimetype: "audio/mpeg",
-      fileName: convert.title + ".mp3",
+      fileName: `${convert.title}.mp3`,
       contextInfo: {
         externalAdReply: {
           title: convert.title,
@@ -88,12 +100,11 @@ cmd({
       }
     }, { quoted: mek });
 
-    // React ✅
     await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
 
   } catch (err) {
     console.error(err);
-    reply("❌ Error: " + err.message);
+    reply("❌ Error: " + (err.message || err));
     await conn.sendMessage(from, { react: { text: "❌", key: mek.key } });
   }
 });
