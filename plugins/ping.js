@@ -24,9 +24,10 @@ cmd({
     react: "🏓"
 }, async (conn, mek, m) => {
     const start = Date.now();
-    const pong = `🏓 ${toTinyCaps("Pong!")}`;
+    const msg = await m.reply("🏓 " + toTinyCaps("Pong!"));
     const end = Date.now();
-    const speed = `⚡ ${toTinyCaps("Popkid XTR Speed")}: *${end - start}ms*`;
 
-    await conn.sendMessage(m.chat, { text: `${pong}\n${speed}` }, { quoted: mek });
+    await conn.sendMessage(m.chat, { 
+        text: `⚡ ${toTinyCaps("Popkid xtr Speed")}: *${end - start}ms*`
+    }, { quoted: mek });
 });
