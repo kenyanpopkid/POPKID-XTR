@@ -6,7 +6,7 @@
 
 const { cmd } = require('../command');
 
-// popkid caps fobt
+// Tiny caps font converter
 const toTinyCaps = (str) => {
     const tinyCapsMap = {
         a:"ᴀ", b:"ʙ", c:"ᴄ", d:"ᴅ", e:"ᴇ", f:"ғ", g:"ɢ", h:"ʜ",
@@ -24,13 +24,9 @@ cmd({
     react: "🏓"
 }, async (conn, mek, m) => {
     const start = Date.now();
+    const pong = `🏓 ${toTinyCaps("Pong!")}`;
     const end = Date.now();
-    const speed = end - start;
+    const speed = `⚡ ${toTinyCaps("Popkid XTR Speed")}: *${end - start}ms*`;
 
-    const text = `┏━━━❰ ᴘɪɴɢ ❱━━━┓
-┃ 🏓 ${toTinyCaps("Pong!")}
-┃ ⚡ ${toTinyCaps("Popkid XTR Speed")}: *${speed}ms*
-┗━━━━━━━━━━━━━━━┛`;
-
-    await conn.sendMessage(m.chat, { text }, { quoted: mek });
+    await conn.sendMessage(m.chat, { text: `${pong}\n${speed}` }, { quoted: mek });
 });
