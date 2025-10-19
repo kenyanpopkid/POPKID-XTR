@@ -2,28 +2,6 @@ const { gmd } = require("../pop");
 const axios = require('axios');
 
 
-//═══════════════『 ➕ ADD USER 』═══════════════//
-gmd({
-  pattern: "add",
-  react: "➕",
-  category: "group",
-  description: "Add a user to the group by number.",
-}, async (from, Gifted, ctx) => {
-  const { reply, sender, isAdmin, isGroup, isBotAdmin, args, mek } = ctx;
-
-  if (!isGroup) return reply("❌ Group only command!");
-  if (!isAdmin) return reply(`@${sender.split('@')[0]} you are not an admin.`, { mentions: [sender] });
-  if (!isBotAdmin) return reply("❌ Bot must be admin first!");
-
-  if (!args[0]) return reply("Please provide a number to add.\nExample: *.add 254700000000*");
-
-  const user = args[0].replace(/[^0-9]/g, '') + "@s.whatsapp.net";
-  await Gifted.groupParticipantsUpdate(from, [user], "add")
-    .then(() => reply(`✅ Successfully added @${args[0]}`, { mentions: [user] }))
-    .catch(err => reply(`❌ Failed to add user: ${err.message}`));
-});
-
-
 //═══════════════『 ❌ KICK USER 』═══════════════//
 gmd({
   pattern: "kick",
@@ -71,7 +49,7 @@ gmd({
 
 //═══════════════『 ♻️ REVOKE LINK 』═══════════════//
 gmd({
-  pattern: "revoke",
+  pattern: "resetlink",
   react: "♻️",
   category: "group",
   description: "Revoke and generate a new group invite link.",
@@ -106,43 +84,4 @@ gmd({
 
   await reply("👋 Leaving the group... Bye!");
   await Gifted.groupLeave(from);
-});
-
-
-//═══════════════『 👑 ADMINS LIST 』═══════════════//
-gmd({
-  pattern: "admins",
-  react: "🧩",
-  category: "general",
-  description: "List all group admins.",
-}, async (from, Gifted, ctx) => {
-  const { reply, isGroup } = ctx;
-  if (!isGroup) return reply("❌ Group only command!");
-
-  const gInfo = await Gifted.groupMetadata(from);
-  const admins = gInfo.participants
-    .filter(p => p.admin)
-    .map(p => `👑 @${p.id.split('@')[0]}`)
-    .join('\n');
-
-  reply(`👑 *Group Admins:*\n\n${admins}`, { mentions: gInfo.participants.map(p => p.id) });
-});
-
-
-//═══════════════『 👥 MEMBERS LIST 』═══════════════//
-gmd({
-  pattern: "members",
-  react: "👥",
-  category: "general",
-  description: "List all group members.",
-}, async (from, Gifted, ctx) => {
-  const { reply, isGroup } = ctx;
-  if (!isGroup) return reply("❌ Group only command!");
-
-  const gInfo = await Gifted.groupMetadata(from);
-  const members = gInfo.participants
-    .map(p => `👤 @${p.id.split('@')[0]}`)
-    .join('\n');
-
-  reply(`👥 *Group Members (${gInfo.participants.length}):*\n\n${members}`, { mentions: gInfo.participants.map(p => p.id) });
 });
