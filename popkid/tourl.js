@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require('fs').promises;
 
 gmd({
-    pattern: "giftedcdn",
+    pattern: "popkidcdn",
     react: "⬆️",
     category: "uploader",
     description: "Upload any file to GiftedCDN",
