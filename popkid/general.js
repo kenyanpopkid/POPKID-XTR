@@ -19,18 +19,33 @@ gmd({
   category: "general",
   description: "Fetch bot main menu",
 }, async (from, Gifted, conText) => {
-  const { mek, sender, react, pushName, botPic, botMode, botVersion, botName, botFooter, timeZone, botPrefix, newsletterJid } = conText;
+  const {
+    mek,
+    sender,
+    react,
+    pushName,
+    botPic,
+    botMode,
+    botVersion,
+    botName,
+    botFooter,
+    timeZone,
+    botPrefix,
+    newsletterJid
+  } = conText;
 
+  // 🕒 Uptime Formatter
   function formatUptime(seconds) {
     const days = Math.floor(seconds / (24 * 60 * 60));
     seconds %= 24 * 60 * 60;
-    const hours = Math.floor(seconds / (60 * 60));
-    seconds %= 60 * 60;
+    const hours = Math.floor(seconds / 3600);
+    seconds %= 3600;
     const minutes = Math.floor(seconds / 60);
     seconds = Math.floor(seconds % 60);
     return `${days}d ${hours}h ${minutes}m ${seconds}s`;
   }
 
+  // 📆 Date & Time
   const now = new Date();
   const date = new Intl.DateTimeFormat("en-GB", {
     timeZone: timeZone,
@@ -50,6 +65,7 @@ gmd({
   const uptime = formatUptime(process.uptime());
   const totalCommands = commands.filter(cmd => cmd.pattern).length;
 
+  // 📁 Group commands by category
   const categorized = commands.reduce((menu, cmd) => {
     if (cmd.pattern && !cmd.dontAddCommandList) {
       if (!menu[cmd.category]) menu[cmd.category] = [];
@@ -58,42 +74,41 @@ gmd({
     return menu;
   }, {});
 
-  // 🌟 Stylish Header
+  // 💫 Elegant Header
   const header = `
-╭─❖  ${botName}  ❖─╮
-│
-│  💠 *Status:*  𝐂𝐎𝐍𝐍𝐄𝐂𝐓𝐄𝐃 ✅
-│  ⚙️ *Mode:*  ${botMode}
-│  🔰 *Prefix:*  [ ${botPrefix} ]
-│  👤 *User:*  ${pushName}
-│  🧩 *Plugins:*  ${totalCommands.toString()}
-│  🪄 *Version:*  ${botVersion}
-│  ⏱ *Uptime:*  ${uptime}
-│  🕓 *Time:*  ${time}
-│  📅 *Date:*  ${date}
-│  🌍 *TimeZone:*  ${timeZone}
-│
-╰───────────────────────❖
+╭══✦〔 💫 *${botName}* 💫 〕✦═╮
+│ 👤 *User:* ${pushName}
+│ ⚙️ *Mode:* ${botMode}
+│ 🔰 *Prefix:* [ ${botPrefix} ]
+│ 🪶 *Plugins:* ${totalCommands}
+│ 🕰 *Uptime:* ${uptime}
+│ 📅 *Date:* ${date}
+│ ⏰ *Time:* ${time}
+│ 🌍 *TimeZone:* ${timeZone}
+│ 🧩 *Version:* ${botVersion}
+╰───⭘
+🦋❤️🤧 ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ${botName} ᴍᴇɴᴜ
 ${readmore}
 `.trim();
 
-  // 🎛 Category Formatter
+  // 🎨 Category Style
   const formatCategory = (category, cmds) => {
-    const title = `╭─⌬  *${category.toUpperCase()}*  ⌬─╮\n`;
-    const body = cmds.map(cmd => `│  ✦ ${botPrefix + cmd}`).join("\n");
-    const footer = `╰───────────────────────╯\n`;
+    const title = `╭═✦〔 ${category.toUpperCase()} 〕✦═╮\n`;
+    const body = cmds.map(cmd => `│  ✪ ${botPrefix + cmd}`).join("\n");
+    const footer = `╰───⭘\n`;
     return `${title}${body}\n${footer}`;
   };
 
-  // 🧾 Build Menu
+  // 📜 Build the menu text
   let menu = `${header}\n\n`;
   for (const [category, cmds] of Object.entries(categorized)) {
     menu += `${formatCategory(category, cmds)}\n`;
   }
 
+  // 🖼 Send Menu with Image
   const message = {
     image: { url: botPic },
-    caption: `${menu.trim()}\n\n> *${botFooter}*`,
+    caption: `${menu.trim()}\n\n> ✨ *${botFooter}* ✨`,
     contextInfo: {
       mentionedJid: [sender],
       forwardingScore: 5,
@@ -101,15 +116,14 @@ ${readmore}
       forwardedNewsletterMessageInfo: {
         newsletterJid: newsletterJid,
         newsletterName: botName,
-        serverMessageId: 143
-      }
-    }
+        serverMessageId: 143,
+      },
+    },
   };
 
   await Gifted.sendMessage(from, message, { quoted: mek });
   await react("✅");
 });
-
 
 gmd({
   pattern: "return",
@@ -160,36 +174,30 @@ gmd({
 });
 
 
-gmd({ 
+gmd({
   pattern: "ping",
   react: "⚡",
   category: "general",
   description: "Check bot response speed",
 }, async (from, Gifted, conText) => {
-      const { mek, react, newsletterJid, botName } = conText;
-    const startTime = process.hrtime();
+  const { mek, react, botName } = conText;
+  const start = process.hrtime();
 
-    await new Promise(resolve => setTimeout(resolve, Math.floor(80 + Math.random() * 420)));
-    
-    const elapsed = process.hrtime(startTime);
-    const responseTime = Math.floor((elapsed[0] * 1000) + (elapsed[1] / 1000000));
+  await new Promise(r => setTimeout(r, Math.floor(80 + Math.random() * 420)));
 
-    await Gifted.sendMessage(from, {
-      text: `⚡ Pong: ${responseTime}ms`,
-      contextInfo: {
-        forwardingScore: 5,
-        isForwarded: true,
-        forwardedNewsletterMessageInfo: {
-          newsletterJid: newsletterJid,
-          newsletterName: botName,
-          serverMessageId: 143
-        }
-      }
-    }, { quoted: mek });
-      await react("✅");
-  }
-);
+  const end = process.hrtime(start);
+  const speed = Math.floor((end[0] * 1000) + (end[1] / 1e6));
+  const feel = speed < 150 ? "🚀" : speed < 350 ? "⚡" : "🐢";
 
+  const pingMsg = `
+${feel} *𝙋𝙊𝙋𝙆𝙄𝘿 𝙓𝙏𝙍* ᴀᴄᴛɪᴠᴇ ⚡
+📡 *${speed}ms*
+🦋 ᴠɪʙɪɴɢ ᴏɴʟɪɴᴇ ❤️
+`.trim();
+
+  await Gifted.sendMessage(from, { text: pingMsg }, { quoted: mek });
+  await react("✅");
+});
 
 
 
