@@ -42,7 +42,7 @@
 
 <p align="center">
   <a href="https://www.mediafire.com/file/16mhe4swopx6ukl/POPKID-XTR-main+(1)+(10).zip/file">
-    <img src="https://img.shields.io/badge/⬇️_GET_ZIP_HERE-00FFAA?style=for-the-badge&logo=googledrive&logoColor=black&labelColor=000000">
+    <img src="https://img.shields.io/badge/⬇️_GET_ZIP_HERE-00FFAA?style=for-the-badge&logo=nissan&logoColor=red&labelColor=000000">
   </a>
 </p>
 
