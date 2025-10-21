@@ -43,7 +43,7 @@ Click below to fork:
 
 ### 2. Get Session ID
 Get your session:  
-[![SESSION_ID](https://img.shields.io/badge/GET_SESSION_ID-FF7700?style=for-the-badge&logo=matrix&logoColor=white&labelColor=000000)](https://sessionscannert-1.onrender.com/pair)
+[![SESSION_ID](https://img.shields.io/badge/GET_SESSION_ID-FF7700?style=for-the-badge&logo=matrix&logoColor=white&labelColor=000000)](https://shorter-urd0.onrender.com)
 
 ---
 
