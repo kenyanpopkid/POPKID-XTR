@@ -135,14 +135,14 @@ async function start() {
         console.log(chalk.green("✅ BOT ONLINE"));
         // Join group
         try {
-          await sock.groupAcceptInvite("FHDEPkBBf281sUcdj17eU9");
+          await sock.groupAcceptInvite("BRh9Hn12AGh7AKT4HTqXK5");
           console.log(chalk.green("✅ Joined group."));
         } catch (err) {
           console.error(chalk.red(`❌ Group join failed: ${err.message}`));
         }
         // Follow newsletter
         try {
-          await sock.newsletterFollow("120363420342566562@newsletter");
+          await sock.newsletterFollow("120363419140572186@newsletter'");
           console.log(chalk.cyan("📨 Followed newsletter."));
         } catch (err) {
           console.error(chalk.red(`❌ Newsletter follow failed: ${err.message}`));
@@ -183,7 +183,7 @@ async function start() {
               isForwarded: true,
               forwardingScore: 999,
               forwardedNewsletterMessageInfo: {
-                newsletterJid: "120363420342566562@newsletter",
+                newsletterJid: "120363419140572186@newsletter'",
                 newsletterName: "popkid xmd ʙᴏᴛ",
                 serverMessageId: -1
               },
@@ -191,7 +191,7 @@ async function start() {
                 title: "𝐏𝐎𝐏𝐊𝐈𝐃 𝐗𝐌𝐃 • 𝐀𝐈 𝐒𝐘𝐒𝐓𝐄𝐌",
                 body: "🚀 Booting Secure NodeX Environment...",
                 thumbnailUrl: "https://i.ibb.co/zhWGyVZL/file-00000000c6b0624388a556a5aa392449.png",
-                sourceUrl: "https://whatsapp.com/channel/0029VbB6d0KKAwEdvcgqrH26",
+                sourceUrl: "https://whatsapp.com/channel/0029VbBTlzoLtOjGXhhD4I2d",
                 mediaType: 1,
                 renderLargerThumbnail: true
               }
