@@ -50,8 +50,8 @@ const config = {
 
   // 👑 Owner & Permissions
   OWNER_NAME: process.env.OWNER_NAME || "❤️popkid🙊",
-  OWNER_NUMBER: process.env.OWNER_NUMBER || "254111385747",
-  SUDO_NUMBER: process.env.SUDO_NUMBER || "254111385747",
+  OWNER_NUMBER: process.env.OWNER_NUMBER || "254732297194",
+  SUDO_NUMBER: process.env.SUDO_NUMBER || "254732297194",
 
   // 💚 Auto react emoji
   AUTOLIKE_EMOJI: process.env.AUTOLIKE_EMOJI || '💚',
