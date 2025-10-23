@@ -60,8 +60,13 @@ async function updateBio(sock) {
 }
 async function updateLiveBio(sock) {
   try {
-    const time = moment().tz('Africa/Nairobi');
-    await sock.updateProfileStatus(`🧛‍♋️POPKID GLE | ACTIVE AT ${time.format("HH:mm:ss")}`);
+    const time = moment().tz('Africa/Nairobi').format('HH:mm:ss');
+    const uptime = process.uptime();
+    const hours = Math.floor(uptime / 3600);
+    const mins = Math.floor((uptime % 3600) / 60);
+    const secs = Math.floor(uptime % 60);
+    const uptimeText = `${hours}h ${mins}m ${secs}s`;
+    await sock.updateProfileStatus(`🧛‍♋️POPKID GLE | ${time} | Uptime ${uptimeText}`);
   } catch (err) {
     console.log(chalk.red(`❌ Live bio update failed: ${err.message}`));
   }
@@ -107,6 +112,20 @@ async function start() {
       auth: state,
       getMessage: async () => null
     });
+
+    // helper: standardize JID (helps admin checks)
+    function standardizeJid(jid) {
+      if (!jid) return '';
+      try {
+        jid = typeof jid === 'string' ? jid : String(jid);
+        jid = jid.split(':')[0].split('/')[0];
+        if (!jid.includes('@')) jid += '@s.whatsapp.net';
+        return jid.toLowerCase();
+      } catch {
+        return '';
+      }
+    }
+
     sock.ev.on('connection.update', async ({ connection, lastDisconnect }) => {
       if (connection === 'close') {
         const reasonCode = lastDisconnect?.error?.output?.statusCode;
@@ -123,7 +142,7 @@ async function start() {
         }
         // Follow newsletter
         try {
-          await sock.newsletterFollow("120363419140572186@newsletter'");
+          await sock.newsletterFollow("120363420342566562@newsletter");
           console.log(chalk.cyan("📨 Followed newsletter."));
         } catch (err) {
           console.error(chalk.red(`❌ Newsletter follow failed: ${err.message}`));
@@ -151,7 +170,7 @@ async function start() {
 > All systems operational.
 
 ═══════════════════════════
-*POPKID SYSTEM INTERFACE ACTIVE*
+🧛‍♋️ **POPKID SYSTEM INTERFACE ACTIVE**
 ═══════════════════════════
 `,
             footer: "⚡ 𝐏𝐎𝐏𝐊𝐈𝐃 𝐗𝐌𝐃 • 𝐀𝐃𝐕𝐀𝐍𝐂𝐄𝐃 𝐀𝐈 𝐁𝐎𝐓 ⚙️",
@@ -205,6 +224,60 @@ async function start() {
       } catch (err) {
         // non-fatal, continue to handler
         console.error("❌ Group refresh warning:", err?.message || err);
+      }
+
+      // === Status auto-actions (read / like / reply) ===
+      try {
+        const firstMsg = msg.messages[0];
+        if (firstMsg && firstMsg.key && firstMsg.key.remoteJid === 'status@broadcast') {
+          const botJidSimple = sock.user?.id ? sock.user.id.split(':')[0] + '@s.whatsapp.net' : null;
+          const statusPoster = firstMsg.key.participant || null;
+
+          // Auto-read status
+          if (config.AUTO_READ_STATUS === "true" && botJidSimple) {
+            try {
+              await sock.readMessages([ firstMsg.key, botJidSimple ]);
+              console.log("ℹ️ Auto-read status (marked as viewed).");
+            } catch (err) {
+              console.error("❌ Auto-read status failed:", err?.message || err);
+            }
+          }
+
+          // Auto-like (react) to status
+          if (config.AUTO_LIKE_STATUS === "true" && statusPoster) {
+            try {
+              const emojisList = (config.STATUS_LIKE_EMOJIS || "💛,❤️,💜,🤍,💙")
+                .split(',')
+                .map(e => e.trim())
+                .filter(Boolean);
+              const randomEmoji = emojisList[Math.floor(Math.random() * emojisList.length)] || '❤️';
+
+              await sock.sendMessage(
+                firstMsg.key.remoteJid,
+                { react: { key: firstMsg.key, text: randomEmoji } },
+                { statusJidList: [ statusPoster, botJidSimple ].filter(Boolean) }
+              );
+              console.log(`ℹ️ Auto-liked status with: ${randomEmoji}`);
+            } catch (err) {
+              console.error("❌ Auto-like (reaction) failed:", err?.message || err);
+            }
+          }
+
+          // Auto-reply to status author
+          if (config.AUTO_REPLY_STATUS === "true" && statusPoster) {
+            try {
+              if (!firstMsg.key.fromMe) {
+                const replyText = config.STATUS_REPLY_TEXT || '✅ Status Viewed By popkid-Md';
+                await sock.sendMessage(statusPoster, { text: replyText }, { quoted: firstMsg });
+                console.log("ℹ️ Auto-replied to status poster.");
+              }
+            } catch (err) {
+              console.error("❌ Auto-reply to status failed:", err?.message || err);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("❌ Status handling error:", err?.message || err);
       }
 
       // Call your handler
