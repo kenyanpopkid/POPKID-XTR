@@ -1,4 +1,4 @@
-import config from '../../config.cjs';
+import config from "../../config.cjs";
 
 const startTime = Date.now();
 const formatRuntime = (ms) => {
@@ -11,7 +11,16 @@ const formatRuntime = (ms) => {
 
 const menu = async (m, sock) => {
   try {
-    const prefix = config.PREFIX;
+    // ✅ Only respond to the "menu" command
+    const prefix = config.PREFIX || ".";
+    const body =
+      (typeof m.text === "string" && m.text.startsWith(prefix)) ? m.text : "";
+
+    const command = body.slice(prefix.length).trim().split(" ")[0].toLowerCase();
+
+    // 🧠 If it's not the menu command, ignore
+    if (command !== "menu") return;
+
     const ownerName = config.OWNER_NAME || "POPKID";
     const botName = config.BOT_NAME || "POPKID BOT";
     const mode = config.MODE || "Public";
@@ -19,13 +28,14 @@ const menu = async (m, sock) => {
     const speed = "0.0009ms";
     const uptime = formatRuntime(Date.now() - startTime);
 
-    // Profile picture
+    // 🖼️ Profile picture fallback
     let profilePic = "https://files.catbox.moe/e1k73u.jpg";
     try {
-      const fetchedPic = await sock.profilePictureUrl(m.sender, 'image');
+      const fetchedPic = await sock.profilePictureUrl(m.sender, "image");
       if (fetchedPic) profilePic = fetchedPic;
     } catch {}
 
+    // 🧾 Menu text
     const menuText = `
 ╭───────────────━⊷
 ┃ *${botName} ᴍᴇɴᴜ*
@@ -208,7 +218,6 @@ const menu = async (m, sock) => {
       },
       { quoted: m }
     );
-
   } catch (e) {
     console.error(e);
     await sock.sendMessage(m.from, { text: "❌ Error displaying menu!" }, { quoted: m });
