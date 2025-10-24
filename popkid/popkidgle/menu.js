@@ -11,15 +11,13 @@ const formatRuntime = (ms) => {
 
 const menu = async (m, sock) => {
   try {
-    // ✅ Only respond to the "menu" command
     const prefix = config.PREFIX || ".";
     const body =
-      (typeof m.text === "string" && m.text.startsWith(prefix)) ? m.text : "";
-
+      typeof m.text === "string" && m.text.startsWith(prefix) ? m.text : "";
     const command = body.slice(prefix.length).trim().split(" ")[0].toLowerCase();
 
-    // 🧠 If it's not the menu command, ignore
-    if (command !== "menu") return;
+    // ✅ Respond only to specific commands
+    if (!["menu", "help", "commands", "list"].includes(command)) return;
 
     const ownerName = config.OWNER_NAME || "POPKID";
     const botName = config.BOT_NAME || "POPKID BOT";
@@ -28,14 +26,14 @@ const menu = async (m, sock) => {
     const speed = "0.0009ms";
     const uptime = formatRuntime(Date.now() - startTime);
 
-    // 🖼️ Profile picture fallback
+    // 🖼️ Get profile picture or use fallback
     let profilePic = "https://files.catbox.moe/e1k73u.jpg";
     try {
       const fetchedPic = await sock.profilePictureUrl(m.sender, "image");
       if (fetchedPic) profilePic = fetchedPic;
     } catch {}
 
-    // 🧾 Menu text
+    // 🧾 The menu text
     const menuText = `
 ╭───────────────━⊷
 ┃ *${botName} ᴍᴇɴᴜ*
@@ -209,18 +207,31 @@ const menu = async (m, sock) => {
 ╰──────────────❍
 `;
 
+    // 📰 Send as a newsletter-forwarded style message
     await sock.sendMessage(
       m.from,
       {
         image: { url: profilePic },
         caption: menuText,
-        headerType: 4
+        contextInfo: {
+          forwardingScore: 999,
+          isForwarded: true,
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: "120363419140572186@newsletter",
+            newsletterName: "POPKID XTR",
+            serverMessageId: 1,
+          },
+        },
       },
       { quoted: m }
     );
   } catch (e) {
     console.error(e);
-    await sock.sendMessage(m.from, { text: "❌ Error displaying menu!" }, { quoted: m });
+    await sock.sendMessage(
+      m.from,
+      { text: "❌ Error displaying menu!" },
+      { quoted: m }
+    );
   }
 };
 
